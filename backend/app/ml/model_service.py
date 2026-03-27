@@ -33,6 +33,7 @@ class ModelService:
         if missing_features:
             raise ValueError(f"Dataset missing required columns: {', '.join(missing_features)}")
 
+
         if "grade_label" in df.columns:
             target = df["grade_label"]
         elif "final_score" in df.columns:
