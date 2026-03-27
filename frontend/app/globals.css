@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #f4efe6;
+  --ink: #1f2d3a;
+  --accent: #0f8b8d;
+  --accent-soft: #d9f1ef;
+  --success: #2d936c;
+  --warn: #f0a202;
+  --danger: #b80c09;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(15, 139, 141, 0.2), transparent 35%),
+    radial-gradient(circle at 85% 5%, rgba(240, 162, 2, 0.15), transparent 40%),
+    linear-gradient(180deg, #f9f5ef, #f4efe6);
+  color: var(--ink);
+  font-family: "Manrope", "Segoe UI", sans-serif;
+}
+
+.font-display {
+  font-family: "Sora", "Trebuchet MS", sans-serif;
+}
+
+.fade-in {
+  animation: fadeIn 320ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
