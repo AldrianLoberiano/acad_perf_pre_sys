@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 
@@ -19,6 +20,9 @@ jwt = JWTManager()
 def create_app(config_name: str = "development") -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
+
+    allowed_origins = [origin.strip() for origin in app.config["FRONTEND_ORIGINS"].split(",") if origin.strip()]
+    CORS(app, resources={r"/*": {"origins": allowed_origins}})
 
     db.init_app(app)
     migrate.init_app(app, db)
