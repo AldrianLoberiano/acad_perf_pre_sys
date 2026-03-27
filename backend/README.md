@@ -85,6 +85,18 @@ python -m app.ml.train_model --data app/ml/sample_students_dataset.csv
 python run.py
 ```
 
+8. Import schema SQL (alternative to migrations):
+
+```powershell
+psql -U postgres -d academic_perf_db -f sql/academic_perf_schema.sql
+```
+
+9. Import seed data:
+
+```powershell
+psql -U postgres -d academic_perf_db -f sql/academic_perf_seed.sql
+```
+
 Health endpoint:
 
 - `GET /health`
@@ -122,6 +134,25 @@ Health endpoint:
 ### Reports
 
 - `GET /reports/students/<student_id>`
+
+## Postman Collection
+
+- Import: `postman/AcademicPerformanceAPI.postman_collection.json`
+- Set collection variables as needed (`baseUrl`, `teacherUsername`, `teacherPassword`, `adminUsername`, `adminPassword`).
+
+## Automated Smoke Test
+
+Run all core endpoint checks in one command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_smoke_test.ps1
+```
+
+Optional custom base URL:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_smoke_test.ps1 -BaseUrl http://127.0.0.1:5000
+```
 
 ## Sample Payloads
 
@@ -169,7 +200,6 @@ Prediction response (example):
   "recommendations": ["Increase weekly study time by 2-4 hours"]
 }
 ```
-
 ## Docker (Optional)
 
 ```powershell
@@ -181,3 +211,5 @@ docker compose up --build
 - Secure `JWT_SECRET_KEY` before production.
 - Add API docs using Swagger/OpenAPI if required.
 - Add Celery/Redis for async retraining or alert notifications.
+
+## Copyright (c) 2026 academic_perf_pre_sys. All rights reserved/
