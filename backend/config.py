@@ -12,6 +12,10 @@ class BaseConfig:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
     MODEL_PATH = os.getenv("MODEL_PATH", "app/ml/trained_model.joblib")
     SCALER_PATH = os.getenv("SCALER_PATH", "app/ml/scaler.joblib")
+    FRONTEND_ORIGINS = os.getenv(
+        "FRONTEND_ORIGINS",
+        "http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:3001,http://localhost:3001",
+    )
 
 
 class DevelopmentConfig(BaseConfig):
