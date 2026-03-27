@@ -1,0 +1,142 @@
+openapi: 3.0.3
+info:
+  title: Smart Academic Performance Prediction API
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password, role]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, teacher, student]
+      responses:
+        "201":
+          description: User created
+  /auth/login:
+    post:
+      summary: Login user
+      responses:
+        "200":
+          description: Access token returned
+  /students:
+    get:
+      summary: List students
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Students list
+    post:
+      summary: Create student
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Student created
+  /students/{id}:
+    put:
+      summary: Update student
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student updated
+    delete:
+      summary: Delete student
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student deleted
+  /performance:
+    post:
+      summary: Add performance record
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Performance created
+  /performance/{student_id}:
+    get:
+      summary: Get student performance records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Performance records
+  /predict/{student_id}:
+    post:
+      summary: Predict student grade and risk
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Prediction output
+  /predictions:
+    get:
+      summary: List all predictions
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Prediction list
+  /analytics/overview:
+    get:
+      summary: Analytics overview
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Class analytics
+  /analytics/at-risk:
+    get:
+      summary: At-risk students
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: At-risk list
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
