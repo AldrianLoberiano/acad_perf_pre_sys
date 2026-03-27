@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, abort, request
 from flask_jwt_extended import jwt_required
 
 from app.models import db
@@ -19,14 +19,29 @@ def add_performance():
         ["student_id", "attendance", "quiz_score", "assignment_score", "study_hours"],
     )
 
-    student = Student.query.get_or_404(int(payload["student_id"]))
+    try:
+        student_id = int(payload["student_id"])
+        attendance = float(payload["attendance"])
+        quiz_score = float(payload["quiz_score"])
+        assignment_score = float(payload["assignment_score"])
+        study_hours = float(payload["study_hours"])
+    except (TypeError, ValueError):
+        abort(
+            400,
+            description=(
+                "student_id must be an integer and attendance, quiz_score, "
+                "assignment_score, study_hours must be numeric"
+            ),
+        )
+
+    student = Student.query.get_or_404(student_id)
 
     record = Performance(
         student_id=student.id,
-        attendance=float(payload["attendance"]),
-        quiz_score=float(payload["quiz_score"]),
-        assignment_score=float(payload["assignment_score"]),
-        study_hours=float(payload["study_hours"]),
+        attendance=attendance,
+        quiz_score=quiz_score,
+        assignment_score=assignment_score,
+        study_hours=study_hours,
     )
 
     db.session.add(record)
