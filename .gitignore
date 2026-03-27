@@ -1,0 +1,65 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+backend/.venv/
+frontend/.venv/
+
+# Sensitive environment files
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Backend generated files
+backend/__pycache__/
+backend/instance/
+backend/*.sqlite3
+backend/*.db
+backend/app/ml/trained_model.joblib
+backend/app/ml/scaler.joblib
+
+# Frontend / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/.vercel/
+frontend/*.tsbuildinfo
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Local secrets/certs
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
