@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -44,30 +43,89 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="fade-in w-full max-w-md border border-ink/10">
-        <div className="mb-6">
-          <h1 className="font-display text-3xl font-bold text-ink">Academic Signal Studio</h1>
-          <p className="mt-1 text-sm text-ink/70">Sign in to manage students and predictions.</p>
+    <div className="flex min-h-screen items-center justify-center bg-paper p-4">
+      <div className="fade-in w-full max-w-md">
+        {/* Logo / brand */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-white shadow-sm">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+              <path d="M6 12v5c3 3 9 3 12 0v-5" />
+            </svg>
+          </div>
+          <h1 className="font-display text-2xl font-bold text-ink">
+            Academic Signal Studio
+          </h1>
+          <p className="mt-1 text-sm text-ink-light">
+            Sign in to manage students and predictions
+          </p>
         </div>
 
-        <form className="space-y-4" onSubmit={onSubmit}>
-          <div>
-            <label className="mb-1 block text-sm font-semibold">Username</label>
-            <Input {...form.register("username")} placeholder="teacher_seed" />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-semibold">Password</label>
-            <Input {...form.register("password")} type="password" placeholder="TeacherPass123!" />
-          </div>
+        {/* Login card */}
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
+          <form className="space-y-5" onSubmit={onSubmit}>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink">
+                Username
+              </label>
+              <Input
+                {...form.register("username")}
+                placeholder="Enter your username"
+              />
+              {form.formState.errors.username && (
+                <p className="mt-1 text-xs text-danger">
+                  Username must be at least 3 characters
+                </p>
+              )}
+            </div>
 
-          {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink">
+                Password
+              </label>
+              <Input
+                {...form.register("password")}
+                type="password"
+                placeholder="Enter your password"
+              />
+              {form.formState.errors.password && (
+                <p className="mt-1 text-xs text-danger">
+                  Password must be at least 8 characters
+                </p>
+              )}
+            </div>
 
-          <Button className="w-full" type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
-      </Card>
+            {error && (
+              <div className="flex items-center gap-2 rounded-xl border border-danger/20 bg-danger-soft px-3 py-2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0 text-danger">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                <p className="text-sm text-danger">{error}</p>
+              </div>
+            )}
+
+            <Button className="w-full" type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                    <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" />
+                  </svg>
+                  Signing in…
+                </span>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
+        </div>
+
+        <p className="mt-4 text-center text-xs text-ink-light">
+          Academic Performance Prediction System
+        </p>
+      </div>
     </div>
   );
 }
