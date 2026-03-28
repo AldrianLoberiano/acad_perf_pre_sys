@@ -9,16 +9,44 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "var(--ink)",
+        ink: {
+          DEFAULT: "var(--ink)",
+          light: "var(--ink-light)"
+        },
         paper: "var(--paper)",
-        accent: "var(--accent)",
-        accentSoft: "var(--accent-soft)",
-        success: "var(--success)",
-        warn: "var(--warn)",
-        danger: "var(--danger)"
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+          soft: "var(--accent-soft)",
+          muted: "var(--accent-muted)"
+        },
+        success: {
+          DEFAULT: "var(--success)",
+          soft: "var(--success-soft)"
+        },
+        warn: {
+          DEFAULT: "var(--warn)",
+          soft: "var(--warn-soft)"
+        },
+        danger: {
+          DEFAULT: "var(--danger)",
+          soft: "var(--danger-soft)"
+        },
+        border: "var(--border)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          hover: "var(--surface-hover)"
+        }
       },
       boxShadow: {
-        glow: "0 18px 40px rgba(12, 28, 40, 0.16)"
+        card: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)",
+        "card-hover": "0 4px 12px rgba(0,0,0,0.08)",
+        nav: "0 1px 2px rgba(0,0,0,0.04)"
+      },
+      borderRadius: {
+        "2xl": "16px",
+        "xl": "12px",
+        "lg": "10px"
       }
     }
   },
