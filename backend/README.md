@@ -206,6 +206,7 @@ Prediction response (example):
   "recommendations": ["Increase weekly study time by 2-4 hours"]
 }
 ```
+
 ## Docker (Optional)
 
 ```powershell
