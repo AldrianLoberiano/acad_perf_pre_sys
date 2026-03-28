@@ -66,26 +66,33 @@ export function AppShell({ children }: { children: ReactNode }) {
         style={{ height: "var(--navbar-height)" }}
       >
         <div className="flex h-full items-center justify-between px-6">
-          {/* Left: Logo */}
-          <div className="flex items-center gap-2.5">
+          {/* Left: Logo + Nav Links */}
+          <div className="flex items-center gap-8">
             <span className="font-display text-lg font-extrabold tracking-tight text-navy">
               Academic Signal Studio
             </span>
-          </div>
-
-          {/* Center: Search */}
-          <div className="hidden md:flex items-center">
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search cohorts or students..."
-                className="w-[280px] rounded-xl border border-border bg-surface-muted py-2 pl-9 pr-4 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 transition-all"
-              />
-            </div>
+            {/* Horizontal nav links */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {nav.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(item.href + "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors ${
+                      active
+                        ? "text-ink font-semibold"
+                        : "text-ink-light hover:text-ink"
+                    }`}
+                  >
+                    {item.label}
+                    {active && (
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-navy rounded-full" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
 
           {/* Right: Actions + User */}
@@ -105,18 +112,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               </svg>
             </button>
 
-            {/* Divider */}
-            <div className="h-8 w-px bg-border mx-1" />
-
-            {/* User profile */}
-            <div className="flex items-center gap-2.5">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-ink leading-tight">{user?.username || "Dr. Aris Thorne"}</p>
-                <p className="text-[11px] text-ink-light capitalize">{user?.role || "Lead Curator"}</p>
-              </div>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-navy text-[11px] font-bold text-white">
-                {user?.username?.charAt(0)?.toUpperCase() ?? "A"}
-              </div>
+            {/* User avatar */}
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-navy text-[11px] font-bold text-white">
+              {user?.username?.charAt(0)?.toUpperCase() ?? "A"}
             </div>
           </div>
         </div>
@@ -143,17 +141,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* New Report Button */}
-        <div className="px-4 pb-5">
-          <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy py-2.5 text-sm font-semibold text-white transition-all hover:bg-navy-light active:scale-[0.98]">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            New Report
-          </button>
-        </div>
-
         {/* Navigation */}
         <nav className="flex-1 px-3 space-y-0.5">
           {nav.map((item) => {
@@ -171,8 +158,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
+        {/* New Report Button - at bottom above footer */}
+        <div className="px-4 pb-3">
+          <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy py-2.5 text-sm font-semibold text-white transition-all hover:bg-navy-light active:scale-[0.98]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Report
+          </button>
+        </div>
+
         {/* Sidebar footer */}
-        <div className="px-3 pb-4 space-y-0.5">
+        <div className="px-3 pb-4 space-y-0.5 border-t border-border pt-3">
           <button className="nav-link w-full">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
