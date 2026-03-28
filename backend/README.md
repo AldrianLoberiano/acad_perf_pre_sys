@@ -85,6 +85,12 @@ python -m app.ml.train_model --data app/ml/sample_students_dataset.csv
 python run.py
 ```
 
+10. One-command start for backend + frontend (from project root):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-dev.ps1
+```
+
 8. Import schema SQL (alternative to migrations):
 
 ```powershell
@@ -211,5 +217,6 @@ docker compose up --build
 - Secure `JWT_SECRET_KEY` before production.
 - Add API docs using Swagger/OpenAPI if required.
 - Add Celery/Redis for async retraining or alert notifications.
+- `start-dev.ps1` launches backend and frontend in separate PowerShell windows.
 
 ## Copyright (c) 2026 academic_perf_pre_sys. All rights reserved/
