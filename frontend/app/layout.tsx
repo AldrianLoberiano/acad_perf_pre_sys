@@ -6,7 +6,12 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Academic Signal Studio",
-  description: "Frontend dashboard for smart academic performance predictions"
+  description: "Frontend dashboard for smart academic performance predictions",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg"
+  }
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
