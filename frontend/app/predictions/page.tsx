@@ -443,7 +443,7 @@ export default function PredictionsPage() {
                       {[
                         { label: "Attendance Rate", value: factors.attendance, icon: "" },
                         { label: "LMS Activity Score", value: factors.lms, icon: "" },
-                        { label: "Mid-term Assessment", value: factors.midterm, icon: "📝" },
+                        { label: "Mid-term Assessment", value: factors.midterm, icon: "" },
                         { label: "Assignment Completion", value: factors.assignments, icon: "📚" },
                         { label: "Class Participation", value: factors.participation, icon: "🎓" }
                       ].map((factor) => (
