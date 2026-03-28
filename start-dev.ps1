@@ -28,7 +28,8 @@ if (-not (Test-PortInUse -Port $BackendPort)) {
     $backendCmd = "Set-Location '$backendPath'; & '$venvPython' run.py"
     Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", $backendCmd | Out-Null
     Write-Host "Backend start command launched on port $BackendPort"
-} else {
+}
+else {
     Write-Host "Backend already running on port $BackendPort"
 }
 
@@ -36,7 +37,8 @@ if (-not (Test-PortInUse -Port $FrontendPort)) {
     $frontendCmd = "Set-Location '$frontendPath'; npm run dev"
     Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", $frontendCmd | Out-Null
     Write-Host "Frontend start command launched (expected port $FrontendPort)"
-} else {
+}
+else {
     Write-Host "Frontend already running on port $FrontendPort"
 }
 
