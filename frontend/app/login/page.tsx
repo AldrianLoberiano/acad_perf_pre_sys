@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -38,6 +39,22 @@ export default function LoginPage() {
       setAuth(data.access_token, data.user);
       router.replace("/dashboard");
     } catch (err) {
+      if (isAxiosError(err)) {
+        if (!err.response) {
+          setError("Cannot connect to backend API. Start backend on http://127.0.0.1:5000.");
+          return;
+        }
+
+        if (err.response.status === 401) {
+          setError("Invalid username or password.");
+          return;
+        }
+
+        const apiMessage = (err.response.data as { message?: string } | undefined)?.message;
+        setError(apiMessage || "Login failed. Verify credentials or seed users first.");
+        return;
+      }
+
       setError("Login failed. Verify credentials or seed users first.");
     }
   });
