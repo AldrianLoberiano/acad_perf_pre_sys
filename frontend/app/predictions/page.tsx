@@ -441,7 +441,7 @@ export default function PredictionsPage() {
 
                     <div className="space-y-4">
                       {[
-                        { label: "Attendance Rate", value: factors.attendance, icon: "📋" },
+                        { label: "Attendance Rate", value: factors.attendance, icon: "" },
                         { label: "LMS Activity Score", value: factors.lms, icon: "💻" },
                         { label: "Mid-term Assessment", value: factors.midterm, icon: "📝" },
                         { label: "Assignment Completion", value: factors.assignments, icon: "📚" },
