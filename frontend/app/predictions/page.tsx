@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { Card } from "@/components/ui/card";
@@ -50,6 +50,28 @@ export default function PredictionsPage() {
   const token = useAuthGuard();
   const [studentId, setStudentId] = useState("");
   const [selectedPrediction, setSelectedPrediction] = useState<SelectedPrediction | null>(null);
+
+  useEffect(() => {
+    if (!selectedPrediction) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedPrediction(null);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [selectedPrediction]);
 
   const listQuery = useQuery({
     queryKey: ["predictions", token],
@@ -306,213 +328,228 @@ export default function PredictionsPage() {
           const colorIdx = selectedPrediction.student_id % idColors.length;
 
           return (
-            <div className="mt-8 fade-in">
-              {/* Report Header */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                      <polyline points="10 9 9 9 8 9" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-ink">Detailed Prediction Report</h3>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light">
-                      Student #{selectedPrediction.student_id} • Generated {selectedPrediction.time}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSelectedPrediction(null)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-light hover:bg-surface-hover hover:text-ink transition-colors"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
+            <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 md:p-8">
+              <button
+                type="button"
+                aria-label="Close prediction report"
+                onClick={() => setSelectedPrediction(null)}
+                className="absolute inset-0 bg-navy/40 backdrop-blur-[2px]"
+              />
 
-              {/* Report Grid */}
-              <div className="grid gap-5 lg:grid-cols-3">
-                {/* ── Column 1: Summary Card ── */}
-                <Card className="lg:row-span-2">
-                  <div className="text-center pb-4 border-b border-border mb-4">
-                    <div
-                      className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-lg font-bold text-white mb-3"
-                      style={{ backgroundColor: idColors[colorIdx] }}
-                    >
-                      #{selectedPrediction.student_id}
-                    </div>
-                    <h4 className="text-lg font-bold text-ink">Student {selectedPrediction.student_id}</h4>
-                    <p className="text-xs text-ink-light mt-0.5">Academic Performance Analysis</p>
-                  </div>
-
-                  {/* Grade */}
-                  <div className="text-center mb-5">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-1">
-                      Predicted Grade
-                    </p>
-                    <span className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-navy text-white text-2xl font-extrabold">
-                      {selectedPrediction.predicted_grade}
-                    </span>
-                  </div>
-
-                  {/* Risk Level */}
-                  <div className="text-center mb-5">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-2">
-                      Risk Assessment
-                    </p>
-                    <span className={`inline-block rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-wide ${risk.bg} ${risk.text}`}>
-                      {risk.label}
-                    </span>
-                  </div>
-
-                  {/* Confidence */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-medium text-ink-light">Confidence Score</span>
-                      <span className="text-sm font-bold text-ink">{(selectedPrediction.confidence * 100).toFixed(1)}%</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-border overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-accent transition-all duration-700"
-                        style={{ width: `${selectedPrediction.confidence * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </Card>
-
-                {/* ── Column 2: Contributing Factors ── */}
-                <Card className="lg:col-span-2">
-                  <div className="flex items-center justify-between mb-5">
-                    <div>
-                      <h4 className="text-base font-bold text-ink">Contributing Factors</h4>
-                      <p className="text-xs text-ink-light mt-0.5">Breakdown of input signals used in prediction</p>
-                    </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-ink-light">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="20" x2="18" y2="10" />
-                        <line x1="12" y1="20" x2="12" y2="4" />
-                        <line x1="6" y1="20" x2="6" y2="14" />
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Detailed prediction report"
+                className="relative z-10 w-full max-w-6xl max-h-[92vh] overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-2xl fade-in sm:p-6 md:p-7"
+              >
+                {/* Report Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
                       </svg>
                     </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {[
-                      { label: "Attendance Rate", value: factors.attendance, icon: "📋" },
-                      { label: "LMS Activity Score", value: factors.lms, icon: "💻" },
-                      { label: "Mid-term Assessment", value: factors.midterm, icon: "📝" },
-                      { label: "Assignment Completion", value: factors.assignments, icon: "📚" },
-                      { label: "Class Participation", value: factors.participation, icon: "🎓" }
-                    ].map((factor) => (
-                      <div key={factor.label}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">{factor.icon}</span>
-                            <span className="text-sm font-medium text-ink">{factor.label}</span>
-                          </div>
-                          <span className={`text-sm font-bold ${
-                            factor.value >= 80 ? "text-emerald-600" :
-                            factor.value >= 60 ? "text-amber-600" : "text-red-600"
-                          }`}>
-                            {factor.value}%
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-surface-muted overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-700 ${
-                              factor.value >= 80 ? "bg-emerald-500" :
-                              factor.value >= 60 ? "bg-amber-500" : "bg-red-500"
-                            }`}
-                            style={{ width: `${factor.value}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-
-                {/* ── Column 2 Row 2: Recommendations ── */}
-                <Card className="lg:col-span-2">
-                  <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h4 className="text-base font-bold text-ink">Intervention Recommendations</h4>
-                      <p className="text-xs text-ink-light mt-0.5">AI-generated action items based on analysis</p>
+                      <h3 className="text-xl font-bold text-ink">Detailed Prediction Report</h3>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light">
+                        Student #{selectedPrediction.student_id} • Generated {selectedPrediction.time}
+                      </p>
+                      <p className="mt-1 text-[11px] text-ink-muted">Press Esc to close</p>
                     </div>
-                    <span className={`inline-block rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${risk.bg} ${risk.text}`}>
-                      {risk.label}
-                    </span>
                   </div>
+                  <button
+                    onClick={() => setSelectedPrediction(null)}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-light hover:bg-surface-hover hover:text-ink transition-colors"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
 
-                  <div className="space-y-3">
-                    {selectedPrediction.risk_level?.toLowerCase() === "high" ? (
-                      <>
-                        <RecommendationItem
-                          priority="critical"
-                          title="Immediate Academic Counseling"
-                          description="Schedule a one-on-one meeting with academic advisor within 48 hours to address performance gaps."
+                {/* Report Grid */}
+                <div className="grid gap-5 lg:grid-cols-3">
+                  {/* ── Column 1: Summary Card ── */}
+                  <Card className="lg:row-span-2">
+                    <div className="text-center pb-4 border-b border-border mb-4">
+                      <div
+                        className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-lg font-bold text-white mb-3"
+                        style={{ backgroundColor: idColors[colorIdx] }}
+                      >
+                        #{selectedPrediction.student_id}
+                      </div>
+                      <h4 className="text-lg font-bold text-ink">Student {selectedPrediction.student_id}</h4>
+                      <p className="text-xs text-ink-light mt-0.5">Academic Performance Analysis</p>
+                    </div>
+
+                    {/* Grade */}
+                    <div className="text-center mb-5">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-1">
+                        Predicted Grade
+                      </p>
+                      <span className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-navy text-white text-2xl font-extrabold">
+                        {selectedPrediction.predicted_grade}
+                      </span>
+                    </div>
+
+                    {/* Risk Level */}
+                    <div className="text-center mb-5">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-2">
+                        Risk Assessment
+                      </p>
+                      <span className={`inline-block rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-wide ${risk.bg} ${risk.text}`}>
+                        {risk.label}
+                      </span>
+                    </div>
+
+                    {/* Confidence */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-medium text-ink-light">Confidence Score</span>
+                        <span className="text-sm font-bold text-ink">{(selectedPrediction.confidence * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-border overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-accent transition-all duration-700"
+                          style={{ width: `${selectedPrediction.confidence * 100}%` }}
                         />
-                        <RecommendationItem
-                          priority="critical"
-                          title="Attendance Monitoring"
-                          description="Implement mandatory attendance tracking and weekly check-ins with course instructor."
-                        />
-                        <RecommendationItem
-                          priority="high"
-                          title="Peer Tutoring Assignment"
-                          description="Assign a peer tutor from the excellence circle for supplementary academic support."
-                        />
-                        <RecommendationItem
-                          priority="medium"
-                          title="LMS Engagement Plan"
-                          description="Create a structured weekly schedule for completing online coursework and resource reviews."
-                        />
-                      </>
-                    ) : selectedPrediction.risk_level?.toLowerCase() === "medium" ? (
-                      <>
-                        <RecommendationItem
-                          priority="high"
-                          title="Academic Progress Review"
-                          description="Schedule bi-weekly progress check-ins with course coordinator to monitor improvement."
-                        />
-                        <RecommendationItem
-                          priority="medium"
-                          title="Study Group Enrollment"
-                          description="Recommend enrollment in departmental study groups to strengthen collaborative learning."
-                        />
-                        <RecommendationItem
-                          priority="low"
-                          title="Resource Utilization"
-                          description="Encourage regular use of library resources and supplementary course materials."
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <RecommendationItem
-                          priority="low"
-                          title="Maintain Current Trajectory"
-                          description="Student is performing well. Continue monitoring and encourage sustained engagement."
-                        />
-                        <RecommendationItem
-                          priority="low"
-                          title="Advanced Opportunities"
-                          description="Consider recommending for honors track, research assistantship, or mentorship programs."
-                        />
-                        <RecommendationItem
-                          priority="low"
-                          title="Peer Leadership"
-                          description="Nominate as a potential peer tutor or study group leader to support at-risk students."
-                        />
-                      </>
-                    )}
-                  </div>
-                </Card>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* ── Column 2: Contributing Factors ── */}
+                  <Card className="lg:col-span-2">
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <h4 className="text-base font-bold text-ink">Contributing Factors</h4>
+                        <p className="text-xs text-ink-light mt-0.5">Breakdown of input signals used in prediction</p>
+                      </div>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-ink-light">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="20" x2="18" y2="10" />
+                          <line x1="12" y1="20" x2="12" y2="4" />
+                          <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {[
+                        { label: "Attendance Rate", value: factors.attendance, icon: "📋" },
+                        { label: "LMS Activity Score", value: factors.lms, icon: "💻" },
+                        { label: "Mid-term Assessment", value: factors.midterm, icon: "📝" },
+                        { label: "Assignment Completion", value: factors.assignments, icon: "📚" },
+                        { label: "Class Participation", value: factors.participation, icon: "🎓" }
+                      ].map((factor) => (
+                        <div key={factor.label}>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{factor.icon}</span>
+                              <span className="text-sm font-medium text-ink">{factor.label}</span>
+                            </div>
+                            <span className={`text-sm font-bold ${
+                              factor.value >= 80 ? "text-emerald-600" :
+                              factor.value >= 60 ? "text-amber-600" : "text-red-600"
+                            }`}>
+                              {factor.value}%
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-surface-muted overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ${
+                                factor.value >= 80 ? "bg-emerald-500" :
+                                factor.value >= 60 ? "bg-amber-500" : "bg-red-500"
+                              }`}
+                              style={{ width: `${factor.value}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  {/* ── Column 2 Row 2: Recommendations ── */}
+                  <Card className="lg:col-span-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h4 className="text-base font-bold text-ink">Intervention Recommendations</h4>
+                        <p className="text-xs text-ink-light mt-0.5">AI-generated action items based on analysis</p>
+                      </div>
+                      <span className={`inline-block rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${risk.bg} ${risk.text}`}>
+                        {risk.label}
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {selectedPrediction.risk_level?.toLowerCase() === "high" ? (
+                        <>
+                          <RecommendationItem
+                            priority="critical"
+                            title="Immediate Academic Counseling"
+                            description="Schedule a one-on-one meeting with academic advisor within 48 hours to address performance gaps."
+                          />
+                          <RecommendationItem
+                            priority="critical"
+                            title="Attendance Monitoring"
+                            description="Implement mandatory attendance tracking and weekly check-ins with course instructor."
+                          />
+                          <RecommendationItem
+                            priority="high"
+                            title="Peer Tutoring Assignment"
+                            description="Assign a peer tutor from the excellence circle for supplementary academic support."
+                          />
+                          <RecommendationItem
+                            priority="medium"
+                            title="LMS Engagement Plan"
+                            description="Create a structured weekly schedule for completing online coursework and resource reviews."
+                          />
+                        </>
+                      ) : selectedPrediction.risk_level?.toLowerCase() === "medium" ? (
+                        <>
+                          <RecommendationItem
+                            priority="high"
+                            title="Academic Progress Review"
+                            description="Schedule bi-weekly progress check-ins with course coordinator to monitor improvement."
+                          />
+                          <RecommendationItem
+                            priority="medium"
+                            title="Study Group Enrollment"
+                            description="Recommend enrollment in departmental study groups to strengthen collaborative learning."
+                          />
+                          <RecommendationItem
+                            priority="low"
+                            title="Resource Utilization"
+                            description="Encourage regular use of library resources and supplementary course materials."
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <RecommendationItem
+                            priority="low"
+                            title="Maintain Current Trajectory"
+                            description="Student is performing well. Continue monitoring and encourage sustained engagement."
+                          />
+                          <RecommendationItem
+                            priority="low"
+                            title="Advanced Opportunities"
+                            description="Consider recommending for honors track, research assistantship, or mentorship programs."
+                          />
+                          <RecommendationItem
+                            priority="low"
+                            title="Peer Leadership"
+                            description="Nominate as a potential peer tutor or study group leader to support at-risk students."
+                          />
+                        </>
+                      )}
+                    </div>
+                  </Card>
+                </div>
               </div>
             </div>
           );
