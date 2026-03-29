@@ -8,6 +8,8 @@ class Student(db.Model):
     name = db.Column(db.String(120), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     course = db.Column(db.String(120), nullable=False)
+    section = db.Column(db.String(64), nullable=True)
+    teacher = db.Column(db.String(120), nullable=True)
 
     performances = db.relationship(
         "Performance",
@@ -28,4 +30,6 @@ class Student(db.Model):
             "name": self.name,
             "age": self.age,
             "course": self.course,
+            "section": self.section,
+            "teacher": self.teacher,
         }
