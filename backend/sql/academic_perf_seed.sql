@@ -23,20 +23,20 @@ SET
     role = EXCLUDED.role;
 
 -- Seed students
-INSERT INTO students (name, age, course)
-SELECT 'Alice Johnson', 20, 'Computer Science'
+INSERT INTO students (name, age, course, section, teacher)
+SELECT 'Alice Johnson', 20, 'Computer Science', 'A', 'Dr. Nadia Clark'
 WHERE NOT EXISTS (
     SELECT 1 FROM students WHERE name = 'Alice Johnson' AND course = 'Computer Science'
 );
 
-INSERT INTO students (name, age, course)
-SELECT 'Brian Santos', 21, 'Information Technology'
+INSERT INTO students (name, age, course, section, teacher)
+SELECT 'Brian Santos', 21, 'Information Technology', 'B', 'Prof. Martin Webb'
 WHERE NOT EXISTS (
     SELECT 1 FROM students WHERE name = 'Brian Santos' AND course = 'Information Technology'
 );
 
-INSERT INTO students (name, age, course)
-SELECT 'Carla Reyes', 19, 'Data Science'
+INSERT INTO students (name, age, course, section, teacher)
+SELECT 'Carla Reyes', 19, 'Data Science', 'C', 'Dr. Amina Farouk'
 WHERE NOT EXISTS (
     SELECT 1 FROM students WHERE name = 'Carla Reyes' AND course = 'Data Science'
 );
