@@ -86,36 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="fixed top-0 left-0 right-0 z-30 border-b border-border bg-surface/98 backdrop-blur-sm"
         style={{ height: "var(--navbar-height)" }}
       >
-        <div className="flex h-full items-center justify-between px-6">
-          {/* Left: Logo + Nav Links */}
-          <div className="flex items-center gap-8">
-            <span className="font-display text-lg font-extrabold tracking-tight text-navy">
-              Academic Signal Studio
-            </span>
-            {/* Horizontal nav links */}
-            <nav className="hidden lg:flex items-center gap-1">
-              {nav.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(item.href + "/");
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors ${
-                      active
-                        ? "text-ink font-semibold"
-                        : "text-ink-light hover:text-ink"
-                    }`}
-                  >
-                    {item.label}
-                    {active && (
-                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-navy rounded-full" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
+        <div className="flex h-full items-center justify-end px-6">
           {/* Right: Actions + User */}
           <div className="flex items-center gap-3">
             {/* Bell */}
