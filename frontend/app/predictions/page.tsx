@@ -14,7 +14,7 @@ import {
 
 import { AppShell } from "@/components/layout/app-shell";
 import { Card } from "@/components/ui/card";
-import { predictionApi } from "@/lib/api";
+import { predictionApi, studentsApi } from "@/lib/api";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 
 /* ── Risk badge styles ── */
@@ -59,7 +59,10 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function getStudentProfile(studentId: number): { name: string; program: string; year: number } {
+function getStudentProfile(
+  studentId: number,
+  student?: { name: string; course: string; section?: string | null; teacher?: string | null }
+): { name: string; program: string; year: number; section: string; teacher: string } {
   const names = [
     "Marcus Holloway",
     "Elena Rodriguez",
@@ -74,11 +77,30 @@ function getStudentProfile(studentId: number): { name: string; program: string; 
     "Business Analytics",
     "Cognitive Psychology"
   ];
+  const teachers = [
+    "Dr. Nadia Clark",
+    "Prof. Martin Webb",
+    "Dr. Amina Farouk",
+    "Prof. Claire Simmons",
+    "Dr. Ian Foster"
+  ];
+
+  if (student) {
+    return {
+      name: student.name,
+      program: student.course,
+      year: (studentId % 4) + 1,
+      section: student.section || "-",
+      teacher: student.teacher || "Unassigned"
+    };
+  }
 
   return {
     name: names[studentId % names.length],
     program: programs[studentId % programs.length],
-    year: (studentId % 4) + 1
+    year: (studentId % 4) + 1,
+    section: ["A", "B", "C"][studentId % 3],
+    teacher: teachers[studentId % teachers.length]
   };
 }
 
@@ -159,6 +181,12 @@ export default function PredictionsPage() {
     enabled: Boolean(token)
   });
 
+  const studentsQuery = useQuery({
+    queryKey: ["students", token, "prediction-context"],
+    queryFn: () => studentsApi.list(token as string),
+    enabled: Boolean(token)
+  });
+
   const predictMutation = useMutation({
     mutationFn: (id: number) => predictionApi.predict(token as string, id),
     onSuccess: (data) => {
@@ -176,6 +204,7 @@ export default function PredictionsPage() {
 
   const apiPredictions = listQuery.data ?? [];
   const hasPredictions = apiPredictions.length > 0;
+  const studentLookup = new Map((studentsQuery.data ?? []).map((student) => [student.id, student] as const));
 
   const displayPredictions = hasPredictions
     ? apiPredictions.map((p, i) => ({
@@ -335,6 +364,7 @@ export default function PredictionsPage() {
                 const risk = getRiskStyle(item.risk_level);
                 const colorIdx = index % idColors.length;
                 const isSelected = selectedPrediction?.student_id === item.student_id;
+                const profile = getStudentProfile(item.student_id, studentLookup.get(item.student_id));
 
                 return (
                   <button
@@ -356,7 +386,10 @@ export default function PredictionsPage() {
 
                     {/* Student info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-base font-bold text-ink">Student {item.student_id}</p>
+                      <p className="text-base font-bold text-ink">{profile.name}</p>
+                      <p className="text-xs text-ink-light mt-0.5">
+                        Sec {profile.section} • {profile.teacher}
+                      </p>
                       <p className="text-xs text-ink-light mt-0.5">
                         Grade {item.predicted_grade} • Confidence {item.confidence}
                       </p>
@@ -405,7 +438,10 @@ export default function PredictionsPage() {
             selectedPrediction.confidence,
             selectedPrediction.risk_level
           );
-          const profile = getStudentProfile(selectedPrediction.student_id);
+          const profile = getStudentProfile(
+            selectedPrediction.student_id,
+            studentLookup.get(selectedPrediction.student_id)
+          );
           const initials = profile.name
             .split(" ")
             .map((part) => part[0])
@@ -475,7 +511,7 @@ export default function PredictionsPage() {
                           Student ID: STU-{String(selectedPrediction.student_id).padStart(4, "0")}
                         </p>
                         <h4 className="mt-1 text-4xl font-extrabold text-navy">{profile.name}</h4>
-                        <p className="text-sm text-ink-light">{profile.program} • Year {profile.year}</p>
+                        <p className="text-sm text-ink-light">{profile.program} • Sec {profile.section} • Year {profile.year}</p>
 
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-red-100 text-red-700">
@@ -486,6 +522,9 @@ export default function PredictionsPage() {
                           </span>
                           <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-accent-soft text-accent">
                             Active Enrollment
+                          </span>
+                          <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-surface-muted text-ink-light">
+                            Teacher: {profile.teacher}
                           </span>
                         </div>
                       </div>
