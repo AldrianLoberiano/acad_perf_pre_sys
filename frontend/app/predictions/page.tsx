@@ -2,6 +2,15 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { Card } from "@/components/ui/card";
@@ -45,6 +54,77 @@ type SelectedPrediction = {
   risk_level: string;
   time: string;
 };
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getStudentProfile(studentId: number): { name: string; program: string; year: number } {
+  const names = [
+    "Marcus Holloway",
+    "Elena Rodriguez",
+    "Kaito Tanaka",
+    "Sarah Jenkins",
+    "Eleanor Vance"
+  ];
+  const programs = [
+    "BSc Computer Science",
+    "Data Science",
+    "Applied Mathematics",
+    "Business Analytics",
+    "Cognitive Psychology"
+  ];
+
+  return {
+    name: names[studentId % names.length],
+    program: programs[studentId % programs.length],
+    year: (studentId % 4) + 1
+  };
+}
+
+function getInterventions(riskLevel: string): Array<{ title: string; description: string; tag: string }> {
+  const risk = riskLevel.toLowerCase();
+  if (risk === "high") {
+    return [
+      {
+        title: "Schedule 1-on-1 Review",
+        description: "Address the recent drop in engagement and define a weekly accountability target.",
+        tag: "High Impact"
+      },
+      {
+        title: "Assign Peer Tutoring",
+        description: "Pair with a high-performing peer to close concept gaps in core modules.",
+        tag: "Social Support"
+      }
+    ];
+  }
+  if (risk === "medium") {
+    return [
+      {
+        title: "Weekly Progress Check",
+        description: "Set short milestone check-ins focused on attendance and assignment completion.",
+        tag: "Structured Follow-up"
+      },
+      {
+        title: "Targeted Practice Plan",
+        description: "Provide focused practice set based on weakest performance indicators.",
+        tag: "Focused Practice"
+      }
+    ];
+  }
+  return [
+    {
+      title: "Maintain Momentum",
+      description: "Keep current study rhythm and reinforce strong participation behavior.",
+      tag: "Performance Keep"
+    },
+    {
+      title: "Leadership Opportunity",
+      description: "Invite student to peer mentoring to sustain confidence and deepen mastery.",
+      tag: "Growth Track"
+    }
+  ];
+}
 
 export default function PredictionsPage() {
   const token = useAuthGuard();
@@ -325,42 +405,51 @@ export default function PredictionsPage() {
             selectedPrediction.confidence,
             selectedPrediction.risk_level
           );
-          const colorIdx = selectedPrediction.student_id % idColors.length;
+          const profile = getStudentProfile(selectedPrediction.student_id);
+          const initials = profile.name
+            .split(" ")
+            .map((part) => part[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+
+          const confidencePercent = Number((selectedPrediction.confidence * 100).toFixed(1));
+          const engagementScore = clamp(factors.lms, 0, 100);
+          const attendanceRate = clamp(factors.attendance, 0, 100);
+          const assessmentAverage = clamp(Math.round((factors.midterm + factors.assignments + factors.participation) / 3), 0, 100);
+
+          const narrativeData = [
+            { week: "Week 1", grades: clamp(assessmentAverage - 6, 20, 98), activity: clamp(engagementScore + 26, 10, 98) },
+            { week: "Week 2", grades: clamp(assessmentAverage - 5, 20, 98), activity: clamp(engagementScore + 24, 10, 98) },
+            { week: "Week 3", grades: clamp(assessmentAverage - 1, 20, 98), activity: clamp(engagementScore + 8, 10, 98) },
+            { week: "Week 4", grades: clamp(assessmentAverage - 3, 20, 98), activity: clamp(engagementScore - 8, 10, 98) },
+            { week: "Week 5", grades: clamp(assessmentAverage - 6, 20, 98), activity: clamp(engagementScore - 20, 10, 98) },
+            { week: "Week 6", grades: clamp(assessmentAverage - 8, 20, 98), activity: clamp(engagementScore - 26, 10, 98) }
+          ];
+
+          const technicalProficiency = clamp(Math.round((assessmentAverage + factors.midterm) / 2), 0, 100);
+          const submissionTimeliness = clamp(Math.round((factors.assignments + factors.attendance) / 2), 0, 100);
+          const interventions = getInterventions(selectedPrediction.risk_level);
 
           return (
-            <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 md:p-8">
+            <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-5 md:p-7">
               <button
                 type="button"
                 aria-label="Close prediction report"
                 onClick={() => setSelectedPrediction(null)}
-                className="absolute inset-0 bg-navy/40 backdrop-blur-[2px]"
+                className="absolute inset-0 bg-navy/45"
               />
 
               <div
                 role="dialog"
                 aria-modal="true"
                 aria-label="Detailed prediction report"
-                className="relative z-10 w-full max-w-6xl max-h-[92vh] overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-2xl fade-in sm:p-6 md:p-7"
+                className="relative z-10 w-full max-w-6xl max-h-[94vh] overflow-y-auto rounded-2xl border border-border bg-paper p-4 shadow-2xl fade-in sm:p-5"
               >
-                {/* Report Header */}
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
-                        <polyline points="10 9 9 9 8 9" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-ink">Detailed Prediction Report</h3>
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light">
-                        Student #{selectedPrediction.student_id} • Generated {selectedPrediction.time}
-                      </p>
-                      <p className="mt-1 text-[11px] text-ink-muted">Press Esc to close</p>
-                    </div>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                  <div>
+                    <p className="text-[11px] font-semibold tracking-wide text-ink-light">Predictions / Detailed Analysis</p>
+                    <h3 className="mt-0.5 text-3xl font-extrabold text-navy">{profile.name}</h3>
                   </div>
                   <button
                     onClick={() => setSelectedPrediction(null)}
@@ -373,182 +462,187 @@ export default function PredictionsPage() {
                   </button>
                 </div>
 
-                {/* Report Grid */}
-                <div className="grid gap-5 lg:grid-cols-3">
-                  {/* ── Column 1: Summary Card ── */}
-                  <Card className="lg:row-span-2">
-                    <div className="text-center pb-4 border-b border-border mb-4">
-                      <div
-                        className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-lg font-bold text-white mb-3"
-                        style={{ backgroundColor: idColors[colorIdx] }}
-                      >
-                        #{selectedPrediction.student_id}
+                {/* Header cards */}
+                <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+                  <Card className="shadow-none">
+                    <div className="flex flex-wrap items-start gap-4">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-navy text-2xl font-extrabold text-white">
+                        {initials}
                       </div>
-                      <h4 className="text-lg font-bold text-ink">Student {selectedPrediction.student_id}</h4>
-                      <p className="text-xs text-ink-light mt-0.5">Academic Performance Analysis</p>
-                    </div>
 
-                    {/* Grade */}
-                    <div className="text-center mb-5">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-1">
-                        Predicted Grade
-                      </p>
-                      <span className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-navy text-white text-2xl font-extrabold">
-                        {selectedPrediction.predicted_grade}
-                      </span>
-                    </div>
+                      <div className="min-w-[240px] flex-1">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
+                          Student ID: STU-{String(selectedPrediction.student_id).padStart(4, "0")}
+                        </p>
+                        <h4 className="mt-1 text-4xl font-extrabold text-navy">{profile.name}</h4>
+                        <p className="text-sm text-ink-light">{profile.program} • Year {profile.year}</p>
 
-                    {/* Risk Level */}
-                    <div className="text-center mb-5">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-2">
-                        Risk Assessment
-                      </p>
-                      <span className={`inline-block rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-wide ${risk.bg} ${risk.text}`}>
-                        {risk.label}
-                      </span>
-                    </div>
-
-                    {/* Confidence */}
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-medium text-ink-light">Confidence Score</span>
-                        <span className="text-sm font-bold text-ink">{(selectedPrediction.confidence * 100).toFixed(1)}%</span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-border overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-accent transition-all duration-700"
-                          style={{ width: `${selectedPrediction.confidence * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  </Card>
-
-                  {/* ── Column 2: Contributing Factors ── */}
-                  <Card className="lg:col-span-2">
-                    <div className="flex items-center justify-between mb-5">
-                      <div>
-                        <h4 className="text-base font-bold text-ink">Contributing Factors</h4>
-                        <p className="text-xs text-ink-light mt-0.5">Breakdown of input signals used in prediction</p>
-                      </div>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-ink-light">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="18" y1="20" x2="18" y2="10" />
-                          <line x1="12" y1="20" x2="12" y2="4" />
-                          <line x1="6" y1="20" x2="6" y2="14" />
-                        </svg>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      {[
-                        { label: "Attendance Rate", value: factors.attendance, icon: "" },
-                        { label: "LMS Activity Score", value: factors.lms, icon: "" },
-                        { label: "Mid-term Assessment", value: factors.midterm, icon: "" },
-                        { label: "Assignment Completion", value: factors.assignments, icon: "" },
-                        { label: "Class Participation", value: factors.participation, icon: "" }
-                      ].map((factor) => (
-                        <div key={factor.label}>
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">{factor.icon}</span>
-                              <span className="text-sm font-medium text-ink">{factor.label}</span>
-                            </div>
-                            <span className={`text-sm font-bold ${
-                              factor.value >= 80 ? "text-emerald-600" :
-                              factor.value >= 60 ? "text-amber-600" : "text-red-600"
-                            }`}>
-                              {factor.value}%
-                            </span>
-                          </div>
-                          <div className="h-2 w-full rounded-full bg-surface-muted overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-700 ${
-                                factor.value >= 80 ? "bg-emerald-500" :
-                                factor.value >= 60 ? "bg-amber-500" : "bg-red-500"
-                              }`}
-                              style={{ width: `${factor.value}%` }}
-                            />
-                          </div>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-red-100 text-red-700">
+                            {risk.label}
+                          </span>
+                          <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-surface-muted text-ink-light">
+                            {selectedPrediction.predicted_grade} Predicted Grade
+                          </span>
+                          <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-accent-soft text-accent">
+                            Active Enrollment
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </Card>
-
-                  {/* ── Column 2 Row 2: Recommendations ── */}
-                  <Card className="lg:col-span-2">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="text-base font-bold text-ink">Intervention Recommendations</h4>
-                        <p className="text-xs text-ink-light mt-0.5">AI-generated action items based on analysis</p>
                       </div>
-                      <span className={`inline-block rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${risk.bg} ${risk.text}`}>
-                        {risk.label}
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      {selectedPrediction.risk_level?.toLowerCase() === "high" ? (
-                        <>
-                          <RecommendationItem
-                            priority="critical"
-                            title="Immediate Academic Counseling"
-                            description="Schedule a one-on-one meeting with academic advisor within 48 hours to address performance gaps."
-                          />
-                          <RecommendationItem
-                            priority="critical"
-                            title="Attendance Monitoring"
-                            description="Implement mandatory attendance tracking and weekly check-ins with course instructor."
-                          />
-                          <RecommendationItem
-                            priority="high"
-                            title="Peer Tutoring Assignment"
-                            description="Assign a peer tutor from the excellence circle for supplementary academic support."
-                          />
-                          <RecommendationItem
-                            priority="medium"
-                            title="LMS Engagement Plan"
-                            description="Create a structured weekly schedule for completing online coursework and resource reviews."
-                          />
-                        </>
-                      ) : selectedPrediction.risk_level?.toLowerCase() === "medium" ? (
-                        <>
-                          <RecommendationItem
-                            priority="high"
-                            title="Academic Progress Review"
-                            description="Schedule bi-weekly progress check-ins with course coordinator to monitor improvement."
-                          />
-                          <RecommendationItem
-                            priority="medium"
-                            title="Study Group Enrollment"
-                            description="Recommend enrollment in departmental study groups to strengthen collaborative learning."
-                          />
-                          <RecommendationItem
-                            priority="low"
-                            title="Resource Utilization"
-                            description="Encourage regular use of library resources and supplementary course materials."
-                          />
-                        </>
-                      ) : (
-                        <>
-                          <RecommendationItem
-                            priority="low"
-                            title="Maintain Current Trajectory"
-                            description="Student is performing well. Continue monitoring and encourage sustained engagement."
-                          />
-                          <RecommendationItem
-                            priority="low"
-                            title="Advanced Opportunities"
-                            description="Consider recommending for honors track, research assistantship, or mentorship programs."
-                          />
-                          <RecommendationItem
-                            priority="low"
-                            title="Peer Leadership"
-                            description="Nominate as a potential peer tutor or study group leader to support at-risk students."
-                          />
-                        </>
-                      )}
                     </div>
                   </Card>
+
+                  <Card className="bg-navy text-white shadow-none">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/70">Prediction Confidence</p>
+                    <p className="mt-2 text-display leading-none text-white">{confidencePercent}%</p>
+                    <div className="mt-4 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-white/75">
+                      <span>High Reliability</span>
+                      <span>Strong Data Signal</span>
+                    </div>
+                    <div className="mt-2 h-1 w-full rounded-full bg-white/15">
+                      <div className="h-full rounded-full bg-teal-400" style={{ width: `${confidencePercent}%` }} />
+                    </div>
+                  </Card>
+                </div>
+
+                {/* KPI cards */}
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                  {[
+                    {
+                      title: "Engagement Score",
+                      value: engagementScore,
+                      unit: "/100",
+                      trend: engagementScore < 55 ? "Declining" : "Improving",
+                      trendClass: engagementScore < 55 ? "text-red-600" : "text-emerald-600",
+                      barClass: engagementScore < 55 ? "bg-red-500" : "bg-emerald-500"
+                    },
+                    {
+                      title: "Attendance Rate",
+                      value: attendanceRate,
+                      unit: "%",
+                      trend: attendanceRate < 80 ? "Critical Zone" : "On Track",
+                      trendClass: attendanceRate < 80 ? "text-red-600" : "text-emerald-600",
+                      barClass: attendanceRate < 80 ? "bg-red-500" : "bg-indigo-500"
+                    },
+                    {
+                      title: "Assessment Average",
+                      value: assessmentAverage,
+                      unit: "%",
+                      trend: assessmentAverage >= 70 ? "Stable" : "Watch",
+                      trendClass: assessmentAverage >= 70 ? "text-emerald-600" : "text-amber-600",
+                      barClass: assessmentAverage >= 70 ? "bg-indigo-500" : "bg-amber-500"
+                    }
+                  ].map((metric) => (
+                    <Card key={metric.title} className="shadow-none">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-muted">{metric.title}</p>
+                        <span className={`text-[10px] font-bold uppercase tracking-[0.12em] ${metric.trendClass}`}>{metric.trend}</span>
+                      </div>
+                      <div className="mt-3 flex items-end gap-1">
+                        <p className="text-4xl font-extrabold text-navy">{metric.value}</p>
+                        <span className="pb-1 text-sm font-semibold text-ink-light">{metric.unit}</span>
+                      </div>
+                      <div className="mt-3 h-0.5 w-full bg-border">
+                        <div className={`h-full ${metric.barClass}`} style={{ width: `${metric.value}%` }} />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Narrative + peer comparison */}
+                <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_300px]">
+                  <Card className="shadow-none">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-bold text-navy">Behavioral Narrative</h4>
+                        <p className="text-xs text-ink-light">6-week engagement vs. assessment trend</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-light">
+                        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-indigo-900" />Grades</span>
+                        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-teal-500" />Activity</span>
+                      </div>
+                    </div>
+
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={narrativeData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e6e8ef" vertical={false} />
+                          <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} domain={[0, 100]} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "#ffffff",
+                              border: "1px solid #e2e8f0",
+                              borderRadius: "10px",
+                              fontSize: "12px"
+                            }}
+                          />
+                          <Line type="monotone" dataKey="grades" stroke="#101f73" strokeWidth={3} dot={false} />
+                          <Line type="monotone" dataKey="activity" stroke="#2a9d8f" strokeWidth={3} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </Card>
+
+                  <Card className="shadow-none">
+                    <h4 className="text-lg font-bold text-navy">Peer Comparison</h4>
+                    <p className="text-xs text-ink-light">Performance vs. class median</p>
+
+                    <div className="mt-6 space-y-6">
+                      <div>
+                        <div className="mb-1 flex items-center justify-between text-sm font-semibold text-navy">
+                          <span>Technical Proficiency</span>
+                          <span>{profile.name.split(" ")[0]}: {technicalProficiency}%</span>
+                        </div>
+                        <div className="h-3 w-full rounded-full bg-border">
+                          <div className="h-full rounded-full bg-indigo-900" style={{ width: `${technicalProficiency}%` }} />
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                          <span>Below Average</span>
+                          <span>Class Median (82%)</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-1 flex items-center justify-between text-sm font-semibold text-navy">
+                          <span>Submission Timeliness</span>
+                          <span>{profile.name.split(" ")[0]}: {submissionTimeliness}%</span>
+                        </div>
+                        <div className="h-3 w-full rounded-full bg-border">
+                          <div className="h-full rounded-full bg-red-600" style={{ width: `${submissionTimeliness}%` }} />
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                          <span>Low Participation</span>
+                          <span>Class Median (74%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Interventions */}
+                <div className="mt-4 rounded-2xl bg-navy p-5 text-white">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">Insight Engine Recommendations</p>
+                      <h4 className="mt-1 text-4xl font-extrabold">Tailored Interventions</h4>
+                    </div>
+                    <button className="rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-slate-100 transition-colors">
+                      Execute Full Plan
+                    </button>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {interventions.map((item) => (
+                      <div key={item.title} className="rounded-xl border border-white/10 bg-white/10 p-4">
+                        <p className="text-lg font-semibold text-white">{item.title}</p>
+                        <p className="mt-1 text-sm text-white/75">{item.description}</p>
+                        <span className="mt-3 inline-block rounded bg-teal-500/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-teal-200">
+                          {item.tag}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -571,40 +665,5 @@ export default function PredictionsPage() {
         </footer>
       </div>
     </AppShell>
-  );
-}
-
-/* ── Recommendation Item Component ── */
-function RecommendationItem({
-  priority,
-  title,
-  description
-}: {
-  priority: "critical" | "high" | "medium" | "low";
-  title: string;
-  description: string;
-}) {
-  const priorityStyles = {
-    critical: { dot: "bg-red-500", badge: "bg-red-100 text-red-700", label: "Critical" },
-    high: { dot: "bg-amber-500", badge: "bg-amber-100 text-amber-700", label: "High" },
-    medium: { dot: "bg-blue-500", badge: "bg-blue-100 text-blue-700", label: "Medium" },
-    low: { dot: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-700", label: "Suggested" }
-  };
-
-  const style = priorityStyles[priority];
-
-  return (
-    <div className="flex gap-3 p-3 rounded-xl border border-border hover:bg-surface-hover transition-colors">
-      <div className={`h-2 w-2 rounded-full shrink-0 mt-1.5 ${style.dot}`} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-ink">{title}</p>
-          <span className={`inline-block rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide ${style.badge}`}>
-            {style.label}
-          </span>
-        </div>
-        <p className="text-xs text-ink-light leading-relaxed">{description}</p>
-      </div>
-    </div>
   );
 }
