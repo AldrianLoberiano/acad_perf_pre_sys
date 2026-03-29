@@ -34,10 +34,10 @@ export interface Prediction {
   id?: number;
   student_id: number;
   predicted_grade: string;
-  risk_level: "Low" | "Medium" | "High";
-  confidence: number;
-  failure_probability: number;
-  recommendations: string[];
+  risk_level?: "Low" | "Medium" | "High";
+  confidence?: number;
+  failure_probability?: number;
+  recommendations?: string[];
   created_at?: string;
 }
 
