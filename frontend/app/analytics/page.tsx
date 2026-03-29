@@ -65,6 +65,17 @@ const fallbackRows = [
   }
 ];
 
+type CorrelationRow = {
+  rowKey: string;
+  initials: string;
+  name: string;
+  engagementScore: number;
+  predictedGrade: string;
+  actualGrade: string;
+  varianceLabel: string;
+  varianceStyle: string;
+};
+
 function getLetterGrade(score: number): string {
   if (score >= 90) return "A";
   if (score >= 85) return "A-";
@@ -114,10 +125,13 @@ export default function AnalyticsPage() {
   const avgTimeOnPlatform = 4.2;
   const assessmentCompletion = Math.min(99, Math.max(70, Math.round((overviewQuery.data?.class_average ?? 88) + 2)));
 
-  const tableRows = useMemo(() => {
+  const tableRows = useMemo<CorrelationRow[]>(() => {
     const performers = overviewQuery.data?.top_performers;
     if (!performers || performers.length === 0) {
-      return fallbackRows;
+      return fallbackRows.map((row, index) => ({
+        ...row,
+        rowKey: `fallback-${row.name}-${index}`
+      }));
     }
 
     return performers.slice(0, 6).map((student, index) => {
@@ -128,6 +142,7 @@ export default function AnalyticsPage() {
       const tag = varianceTag(predictedGrade, actualGrade);
 
       return {
+        rowKey: `student-${student.student_id}-${index}-${student.name}`,
         initials: student.name
           .split(" ")
           .map((part) => part[0])
@@ -361,7 +376,7 @@ export default function AnalyticsPage() {
               </thead>
               <tbody>
                 {tableRows.map((row) => (
-                  <tr key={row.name} className="border-b border-border-light">
+                  <tr key={row.rowKey} className="border-b border-border-light">
                     <td className="py-4 pr-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-navy">
