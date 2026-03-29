@@ -114,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* ─── Sidebar ─── */}
       <aside
-        className="fixed left-0 top-[var(--navbar-height)] bottom-0 z-20 hidden md:flex md:flex-col border-r border-border bg-surface"
+        className="fixed left-0 top-0 bottom-0 z-40 hidden md:flex md:flex-col border-r border-border bg-surface"
         style={{ width: "var(--sidebar-width)" }}
       >
         {/* Sidebar branding */}
