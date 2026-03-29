@@ -129,6 +129,7 @@ export default function DashboardPage() {
             value={classAvg}
             valueSuffix="%"
             variant="default"
+            flat
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
@@ -161,6 +162,7 @@ export default function DashboardPage() {
             value={passRate}
             valueSuffix="%"
             variant="navy"
+            flat
             subtitle="Advanced ML models predict a 4% increase in successful completions."
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" opacity="0.8">
@@ -175,6 +177,7 @@ export default function DashboardPage() {
             value={String(atRiskCount).padStart(2, "0")}
             valueSuffix=""
             variant="danger"
+            flat
             icon={
               <span className="badge-urgent inline-flex items-center rounded-md bg-danger px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
                 Urgent
@@ -210,7 +213,7 @@ export default function DashboardPage() {
         {/* ═══ Bottom Section: Chart + Excellence Circle ═══ */}
         <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
           {/* Engagement Narrative Chart */}
-          <Card>
+          <Card className="shadow-none">
             <div className="flex items-start justify-between mb-1">
               <div>
                 <h3 className="text-lg font-bold text-ink">Engagement Narrative</h3>
@@ -258,8 +261,7 @@ export default function DashboardPage() {
                       border: "none",
                       borderRadius: "10px",
                       color: "#fff",
-                      fontSize: "12px",
-                      boxShadow: "0 4px 16px rgba(10,22,40,0.3)"
+                      fontSize: "12px"
                     }}
                     itemStyle={{ color: "#fff" }}
                     cursor={{ fill: "rgba(37, 99, 235, 0.04)" }}
@@ -284,7 +286,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Excellence Circle */}
-          <Card>
+          <Card className="shadow-none">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[11px] font-semibold uppercase tracking-widest text-ink-light">
                 Excellence Circle
