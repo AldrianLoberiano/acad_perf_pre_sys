@@ -66,34 +66,6 @@ function buildTeacherSummary(students: Student[]): TeacherSummary[] {
     .sort((a, b) => b.studentCount - a.studentCount || a.name.localeCompare(b.name));
 }
 
-function buildTeacherAssignments(students: Student[]): TeacherAssignment[] {
-  const byAssignment = new Map<string, TeacherAssignment>();
-
-  for (const student of students) {
-    const teacher = (student.teacher || "Unassigned").trim() || "Unassigned";
-    const section = (student.section || "Unassigned").trim() || "Unassigned";
-    const course = student.course;
-    const key = `${teacher}||${section}||${course}`;
-
-    const existing = byAssignment.get(key);
-    if (existing) {
-      existing.studentCount += 1;
-    } else {
-      byAssignment.set(key, { teacher, section, course, studentCount: 1 });
-    }
-  }
-
-  return Array.from(byAssignment.values()).sort((a, b) => {
-    if (a.teacher !== b.teacher) {
-      return a.teacher.localeCompare(b.teacher);
-    }
-    if (a.section !== b.section) {
-      return a.section.localeCompare(b.section);
-    }
-    return a.course.localeCompare(b.course);
-  });
-}
-
 function escapeCsv(value: string | number): string {
   const text = String(value);
   return `"${text.replaceAll('"', '""')}"`;
@@ -114,7 +86,6 @@ function downloadBlob(content: string, fileName: string, mimeType: string): void
 export default function TeachersPage() {
   const token = useAuthGuard();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [addForm, setAddForm] = useState<AddTeacherForm>({
     name: "",
@@ -131,37 +102,6 @@ export default function TeachersPage() {
 
   const students = studentsQuery.data ?? [];
   const teacherRows = useMemo(() => buildTeacherSummary(students), [students]);
-  const assignmentRows = useMemo(() => buildTeacherAssignments(students), [students]);
-
-  const filteredTeacherRows = useMemo(() => {
-    const query = normalize(searchTerm);
-    if (!query) {
-      return teacherRows;
-    }
-
-    return teacherRows.filter((row) => {
-      return (
-        normalize(row.name).includes(query) ||
-        row.sections.some((section) => normalize(section).includes(query)) ||
-        row.courses.some((course) => normalize(course).includes(query))
-      );
-    });
-  }, [teacherRows, searchTerm]);
-
-  const filteredAssignments = useMemo(() => {
-    const query = normalize(searchTerm);
-    if (!query) {
-      return assignmentRows;
-    }
-
-    return assignmentRows.filter((row) => {
-      return (
-        normalize(row.teacher).includes(query) ||
-        normalize(row.section).includes(query) ||
-        normalize(row.course).includes(query)
-      );
-    });
-  }, [assignmentRows, searchTerm]);
 
   const assignTeacherMutation = useMutation({
     mutationFn: async (form: AddTeacherForm) => {
@@ -197,12 +137,25 @@ export default function TeachersPage() {
     }
   });
 
-  function getExportRows(): TeacherAssignment[] {
-    return filteredAssignments.length > 0 ? filteredAssignments : assignmentRows;
-  }
+  const exportRows: TeacherAssignment[] = useMemo(() => {
+    const rows: TeacherAssignment[] = [];
+    for (const teacher of teacherRows) {
+      for (const section of teacher.sections.length ? teacher.sections : ["Unassigned"]) {
+        for (const course of teacher.courses) {
+          rows.push({
+            teacher: teacher.name,
+            section,
+            course,
+            studentCount: teacher.studentCount
+          });
+        }
+      }
+    }
+    return rows;
+  }, [teacherRows]);
 
   function exportCsv(): void {
-    const rows = getExportRows();
+    const rows = exportRows;
     const header = ["Teacher", "Section", "Course", "Students"];
     const lines = [
       header.join(","),
@@ -218,7 +171,7 @@ export default function TeachersPage() {
   }
 
   function exportExcel(): void {
-    const rows = getExportRows();
+    const rows = exportRows;
     const htmlRows = rows
       .map((row) => `<tr><td>${row.teacher}</td><td>${row.section}</td><td>${row.course}</td><td>${row.studentCount}</td></tr>`)
       .join("");
@@ -241,7 +194,7 @@ export default function TeachersPage() {
   }
 
   function exportPdf(): void {
-    const rows = getExportRows();
+    const rows = exportRows;
     const printWindow = window.open("", "_blank", "width=1000,height=700");
     if (!printWindow) {
       return;
@@ -286,16 +239,16 @@ export default function TeachersPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-accent">Faculty Management</p>
             <h2 className="mt-1 font-display text-3xl font-extrabold text-ink">Teacher Directory</h2>
             <p className="mt-2 max-w-2xl text-sm text-ink-light">
-              Reveal all teachers with their sections and courses, then export records in CSV, Excel, or PDF.
+              Overview of all teachers, their assigned sections, and course coverage.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <button
               onClick={() => {
                 setShowAddTeacher(true);
@@ -344,21 +297,6 @@ export default function TeachersPage() {
         </div>
 
         <Card className="shadow-none">
-          <div className="flex items-center gap-3">
-            <svg className="text-ink-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search teacher, section, or course"
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
-            />
-          </div>
-        </Card>
-
-        <Card className="shadow-none">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-bold text-ink">Teacher Workload</h3>
             {studentsQuery.isLoading && <span className="text-xs text-ink-light">Loading...</span>}
@@ -384,7 +322,7 @@ export default function TeachersPage() {
                   <p className="text-sm font-semibold text-ink">{teacher.studentCount}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-ink-light">{teacher.sections.length ? teacher.sections.join(", ") : "-"}</p>
+                  <p className="text-sm text-ink-light">{teacher.sections.length ? teacher.sections.join(", ") : "Unassigned"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-ink-light">{teacher.courses.join(", ")}</p>
@@ -392,45 +330,10 @@ export default function TeachersPage() {
               </div>
             ))}
 
-            {!studentsQuery.isLoading && filteredTeacherRows.length === 0 && (
+            {!studentsQuery.isLoading && teacherRows.length === 0 && (
               <div className="rounded-xl border border-border bg-surface p-10 text-center">
                 <p className="text-sm font-semibold text-ink">No teacher data yet</p>
                 <p className="mt-1 text-xs text-ink-light">Add students with teacher names from the Student Directory to populate this view.</p>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        <Card className="shadow-none">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-ink">Detailed Teacher Assignments</h3>
-            <span className="text-xs text-ink-light">Teacher x Section x Course</span>
-          </div>
-
-          <div className="space-y-3">
-            <div className="hidden md:grid md:grid-cols-[minmax(220px,1fr)_110px_minmax(220px,1fr)_100px] gap-4 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-light">
-              <span>Teacher</span>
-              <span>Section</span>
-              <span>Course</span>
-              <span>Students</span>
-            </div>
-
-            {filteredAssignments.map((row) => (
-              <div
-                key={`${row.teacher}-${row.section}-${row.course}`}
-                className="grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-[minmax(220px,1fr)_110px_minmax(220px,1fr)_100px] md:items-center"
-              >
-                <p className="text-sm font-bold text-ink">{row.teacher}</p>
-                <p className="text-sm font-semibold text-ink">{row.section}</p>
-                <p className="text-sm text-ink-light">{row.course}</p>
-                <p className="text-sm font-semibold text-ink">{row.studentCount}</p>
-              </div>
-            ))}
-
-            {!studentsQuery.isLoading && filteredAssignments.length === 0 && (
-              <div className="rounded-xl border border-border bg-surface p-10 text-center">
-                <p className="text-sm font-semibold text-ink">No assignment rows found</p>
-                <p className="mt-1 text-xs text-ink-light">Try another search query or add new teacher assignments.</p>
               </div>
             )}
           </div>
