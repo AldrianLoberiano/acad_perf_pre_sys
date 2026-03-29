@@ -16,6 +16,8 @@ export interface Student {
   name: string;
   age: number;
   course: string;
+  section?: string | null;
+  teacher?: string | null;
 }
 
 export interface Performance {
