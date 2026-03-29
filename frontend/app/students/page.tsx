@@ -105,7 +105,7 @@ export default function StudentsPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 fade-in">
+      <div className="space-y-6">
         {/* ═══ Page Header ═══ */}
         <div className="flex items-start justify-between">
           <div>
@@ -227,7 +227,7 @@ export default function StudentsPage() {
             </Card>
 
             {/* Capacity Utilization Card */}
-            <div className="rounded-2xl bg-navy p-5 shadow-navy">
+            <div className="rounded-2xl bg-navy p-5">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-white/60 mb-4">
                 Capacity Utilization
               </p>
@@ -296,7 +296,7 @@ export default function StudentsPage() {
                 return (
                   <div
                     key={student.id}
-                    className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 shadow-card transition-all hover:shadow-card-hover hover:-translate-y-0.5 group"
+                    className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition-colors group"
                   >
                     {/* Avatar */}
                     <div
