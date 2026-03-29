@@ -327,10 +327,12 @@ export default function StudentsPage() {
 
             {/* Student List */}
             <div className="space-y-3">
-              <div className="hidden md:grid md:grid-cols-[52px_minmax(220px,1fr)_minmax(150px,0.9fr)_80px_120px_36px] md:items-center md:gap-4 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-ink-light">
+              <div className="hidden md:grid md:grid-cols-[52px_minmax(220px,1fr)_minmax(150px,0.9fr)_80px_minmax(160px,1fr)_80px_120px_36px] md:items-center md:gap-4 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-ink-light">
                 <span />
                 <span>Student</span>
                 <span>Department</span>
+                <span>Section</span>
+                <span>Teacher</span>
                 <span className="text-right">GPA</span>
                 <span className="text-right">Status</span>
                 <span />
@@ -343,7 +345,7 @@ export default function StudentsPage() {
                 return (
                   <div
                     key={`${student.id}-${index}`}
-                    className="grid items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition-colors group grid-cols-[52px_minmax(0,1fr)] md:grid-cols-[52px_minmax(220px,1fr)_minmax(150px,0.9fr)_80px_120px_36px]"
+                    className="grid items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition-colors group grid-cols-[52px_minmax(0,1fr)] md:grid-cols-[52px_minmax(220px,1fr)_minmax(150px,0.9fr)_80px_minmax(160px,1fr)_80px_120px_36px]"
                   >
                     {/* Avatar */}
                     <div
@@ -365,12 +367,24 @@ export default function StudentsPage() {
                           Enrolled {student.enrolled}
                         </span>
                       </div>
+                      <p className="mt-1 text-[11px] text-ink-light md:hidden">
+                        {student.course} • Sec {student.section} • {student.teacher}
+                      </p>
                     </div>
 
                     {/* Department */}
                     <div className="hidden md:block min-w-0">
                       <p className="text-sm font-semibold text-ink">{student.course}</p>
-                      <p className="text-[11px] text-ink-light mt-0.5">Sec {student.section} • {student.teacher}</p>
+                    </div>
+
+                    {/* Section */}
+                    <div className="hidden md:block">
+                      <p className="text-sm font-semibold text-ink">{student.section}</p>
+                    </div>
+
+                    {/* Teacher */}
+                    <div className="hidden md:block min-w-0">
+                      <p className="truncate text-sm font-semibold text-ink" title={student.teacher}>{student.teacher}</p>
                     </div>
 
                     {/* GPA */}
