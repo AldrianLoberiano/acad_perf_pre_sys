@@ -44,6 +44,24 @@ paths:
       summary: Create student
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, age, course]
+              properties:
+                name:
+                  type: string
+                age:
+                  type: integer
+                course:
+                  type: string
+                section:
+                  type: string
+                teacher:
+                  type: string
       responses:
         "201":
           description: Student created
