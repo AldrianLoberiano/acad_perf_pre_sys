@@ -289,14 +289,23 @@ export default function StudentsPage() {
 
             {/* Student List */}
             <div className="space-y-3">
+              <div className="hidden md:grid md:grid-cols-[52px_minmax(220px,1fr)_minmax(150px,0.9fr)_80px_120px_36px] md:items-center md:gap-4 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-ink-light">
+                <span />
+                <span>Student</span>
+                <span>Department</span>
+                <span className="text-right">GPA</span>
+                <span className="text-right">Status</span>
+                <span />
+              </div>
+
               {paginated.map((student, index) => {
                 const initials = student.name.split(" ").map(n => n[0]).join("");
                 const colorIdx = (student.id || index) % avatarColors.length;
 
                 return (
                   <div
-                    key={student.id}
-                    className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition-colors group"
+                    key={`${student.id}-${index}`}
+                    className="grid items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition-colors group grid-cols-[52px_minmax(0,1fr)] md:grid-cols-[52px_minmax(220px,1fr)_minmax(150px,0.9fr)_80px_120px_36px]"
                   >
                     {/* Avatar */}
                     <div
@@ -307,36 +316,31 @@ export default function StudentsPage() {
                     </div>
 
                     {/* Name + IDs */}
-                    <div className="min-w-0 flex-shrink-0">
+                    <div className="min-w-0">
                       <p className="text-base font-bold text-ink">{student.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-ink-light">
                         <span className="text-[11px] text-ink-light">
                           ID: <span className="font-semibold text-ink-light">{student.studentId}</span>
                         </span>
+                        <span className="text-ink-muted">•</span>
                         <span className="text-[11px] text-ink-muted">
-                          ENROLLED<br/>{student.enrolled}
+                          Enrolled {student.enrolled}
                         </span>
                       </div>
                     </div>
 
-                    {/* Spacer */}
-                    <div className="flex-1" />
-
                     {/* Department */}
-                    <div className="hidden md:block text-right">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light">Department</p>
+                    <div className="hidden md:block min-w-0">
                       <p className="text-sm font-semibold text-ink">{student.course}</p>
                     </div>
 
                     {/* GPA */}
                     <div className="hidden md:block text-right">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light">GPA</p>
                       <p className="text-sm font-bold text-ink">{student.gpa}</p>
                     </div>
 
                     {/* Status */}
-                    <div className="hidden sm:block text-right">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-light">Status</p>
+                    <div className="hidden md:block text-right">
                       <span className={`inline-block mt-0.5 rounded px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wide ${student.statusColor}`}>
                         {student.status}
                       </span>
