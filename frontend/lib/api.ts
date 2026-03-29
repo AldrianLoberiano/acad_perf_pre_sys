@@ -40,6 +40,12 @@ export const studentsApi = {
       headers: { Authorization: `Bearer ${token}` }
     });
     return data.student;
+  },
+  update: async (token: string, studentId: number, payload: Partial<Omit<Student, "id">>) => {
+    const { data } = await api.put<{ student: Student }>(`/students/${studentId}`, payload, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return data.student;
   }
 };
 
