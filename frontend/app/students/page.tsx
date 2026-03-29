@@ -13,27 +13,37 @@ type FormValues = {
   name: string;
   age: number;
   course: string;
+  section: string;
+  teacher: string;
 };
 
 /* ── Demo students for empty-state fallback ── */
 const demoStudents = [
   {
     id: 1, name: "Marcus Holloway", course: "Neuroscience", age: 21,
+    section: "A",
+    teacher: "Dr. Nadia Clark",
     studentId: "SCI-2024-048", enrolled: "Oct 2023", gpa: "3.92",
     status: "DEANS LIST", statusColor: "bg-emerald-600"
   },
   {
     id: 2, name: "Elena Rodriguez", course: "Philosophy", age: 22,
+    section: "B",
+    teacher: "Prof. Martin Webb",
     studentId: "HUM-2024-112", enrolled: "Jan 2024", gpa: "3.75",
     status: "STANDARD", statusColor: "bg-blue-500"
   },
   {
     id: 3, name: "Kaito Tanaka", course: "Cybernetics", age: 20,
+    section: "A",
+    teacher: "Dr. Amina Farouk",
     studentId: "ENG-2023-882", enrolled: "Sep 2023", gpa: "4.00",
     status: "SCHOLAR", statusColor: "bg-violet-600"
   },
   {
     id: 4, name: "Sarah Jenkins", course: "Visual Arts", age: 23,
+    section: "C",
+    teacher: "Prof. Claire Simmons",
     studentId: "ART-2024-009", enrolled: "Feb 2024", gpa: "3.48",
     status: "WARNING", statusColor: "bg-red-500"
   }
@@ -83,6 +93,8 @@ export default function StudentsPage() {
         name: s.name,
         course: s.course,
         age: s.age,
+        section: s.section || "-",
+        teacher: s.teacher || "Unassigned",
         studentId: `STU-${String(s.id).padStart(4, "0")}`,
         enrolled: "2024",
         gpa: (3.0 + Math.random() * 1.0).toFixed(2),
@@ -95,6 +107,8 @@ export default function StudentsPage() {
   const filtered = displayStudents.filter((s) =>
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.course.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.section.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.teacher.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.studentId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -173,11 +187,11 @@ export default function StudentsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-1.5">
-                      Student ID
+                      Age
                     </label>
                     <input
                       {...form.register("age", { required: true, valueAsNumber: true })}
-                      placeholder="ID-0000"
+                      placeholder="18"
                       type="number"
                       className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 transition-all"
                     />
@@ -189,6 +203,30 @@ export default function StudentsPage() {
                     <input
                       {...form.register("course", { required: true })}
                       placeholder="Data Science"
+                      className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Section + Teacher */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-1.5">
+                      Section
+                    </label>
+                    <input
+                      {...form.register("section", { required: true })}
+                      placeholder="A"
+                      className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-widest text-ink-light mb-1.5">
+                      Teacher
+                    </label>
+                    <input
+                      {...form.register("teacher", { required: true })}
+                      placeholder="Dr. Nadia Clark"
                       className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 transition-all"
                     />
                   </div>
@@ -267,7 +305,7 @@ export default function StudentsPage() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                  placeholder="Search by name, ID, or major..."
+                  placeholder="Search by name, ID, major, section, or teacher..."
                   className="w-full rounded-xl border border-border bg-surface py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 transition-all"
                 />
               </div>
@@ -332,6 +370,7 @@ export default function StudentsPage() {
                     {/* Department */}
                     <div className="hidden md:block min-w-0">
                       <p className="text-sm font-semibold text-ink">{student.course}</p>
+                      <p className="text-[11px] text-ink-light mt-0.5">Sec {student.section} • {student.teacher}</p>
                     </div>
 
                     {/* GPA */}
