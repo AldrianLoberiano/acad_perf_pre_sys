@@ -78,9 +78,19 @@ export default function DashboardPage() {
 
   const chartData = chartView === "weekly" ? weeklyEngagement : monthlyEngagement;
 
+  const excellenceItems = overviewQuery.data?.top_performers
+    ? overviewQuery.data.top_performers.map((student, index) => ({
+        name: student.name,
+        department: "Department",
+        score: student.avg_score,
+        badge: index === 0 ? "PEAK" : index === 1 ? "STABLE" : "RISING",
+        badgeColor: index === 0 ? "bg-emerald-500" : index === 1 ? "bg-amber-500" : "bg-rose-500"
+      }))
+    : excellenceCircle;
+
   return (
     <AppShell>
-      <div className="space-y-6 fade-in">
+      <div className="space-y-6">
         {/* ═══ Page Header ═══ */}
         <div className="flex items-start justify-between">
           <div>
@@ -112,7 +122,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ═══ Stat Cards Row ═══ */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 stagger">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {/* Card 1: Class Average */}
           <StatCard
             label="Class Average"
@@ -289,11 +299,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4">
-              {(overviewQuery.data?.top_performers ?? excellenceCircle).map((student, index) => {
-                const item = overviewQuery.data?.top_performers
-                  ? { name: student.name, department: "Department", score: student.avg_score, badge: index === 0 ? "PEAK" : index === 1 ? "STABLE" : "RISING", badgeColor: index === 0 ? "bg-emerald-500" : index === 1 ? "bg-amber-500" : "bg-rose-500" }
-                  : excellenceCircle[index] || { name: student.name, department: "—", score: 0, badge: "—", badgeColor: "bg-gray-400" };
-
+              {excellenceItems.map((item, index) => {
                 return (
                   <div key={index} className="flex items-center gap-3">
                     {/* Avatar */}
