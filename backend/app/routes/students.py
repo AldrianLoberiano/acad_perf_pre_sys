@@ -12,6 +12,14 @@ from app.utils.validators import require_fields
 students_bp = Blueprint("students", __name__)
 
 
+def _clean_optional_text(value):
+    if value is None:
+        return None
+
+    text = str(value).strip()
+    return text if text else None
+
+
 @students_bp.get("")
 @jwt_required()
 def list_students():
@@ -29,6 +37,8 @@ def create_student():
         name=payload["name"].strip(),
         age=int(payload["age"]),
         course=payload["course"].strip(),
+        section=_clean_optional_text(payload.get("section")),
+        teacher=_clean_optional_text(payload.get("teacher")),
     )
 
     db.session.add(student)
@@ -49,11 +59,19 @@ def bulk_upload_students():
 
     required_columns = {"name", "age", "course"}
     if not required_columns.issubset(set(dataframe.columns)):
-        return {"message": "CSV must contain columns: name, age, course"}, 400
+        return {"message": "CSV must contain columns: name, age, course (optional: section, teacher)"}, 400
 
     created = []
     for _, row in dataframe.iterrows():
-        student = Student(name=str(row["name"]).strip(), age=int(row["age"]), course=str(row["course"]).strip())
+        section = _clean_optional_text(row.get("section")) if "section" in dataframe.columns else None
+        teacher = _clean_optional_text(row.get("teacher")) if "teacher" in dataframe.columns else None
+        student = Student(
+            name=str(row["name"]).strip(),
+            age=int(row["age"]),
+            course=str(row["course"]).strip(),
+            section=section,
+            teacher=teacher,
+        )
         db.session.add(student)
         created.append(student)
 
@@ -77,6 +95,10 @@ def update_student(student_id: int):
         student.age = int(payload["age"])
     if "course" in payload:
         student.course = payload["course"].strip()
+    if "section" in payload:
+        student.section = _clean_optional_text(payload["section"])
+    if "teacher" in payload:
+        student.teacher = _clean_optional_text(payload["teacher"])
 
     db.session.commit()
 
