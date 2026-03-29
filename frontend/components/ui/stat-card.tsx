@@ -48,6 +48,7 @@ export function StatCard({
   value,
   icon,
   variant = "default",
+  flat = false,
   subtitle,
   valueSuffix,
   children
@@ -56,13 +57,15 @@ export function StatCard({
   value: string | number;
   icon?: ReactNode;
   variant?: StatVariant;
+  flat?: boolean;
   subtitle?: string;
   valueSuffix?: string;
   children?: ReactNode;
 }) {
   return (
     <div className={clsx(
-      "rounded-2xl p-5 shadow-card card-lift",
+      "rounded-2xl p-5",
+      flat ? "shadow-none" : "shadow-card card-lift",
       cardStyles[variant]
     )}>
       <div className="flex items-start justify-between">
