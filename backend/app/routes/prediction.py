@@ -7,7 +7,6 @@ from app.models.performance import Performance
 from app.models.prediction import Prediction
 from app.models.student import Student
 from app.services.auth_service import role_required
-from app.services.recommendation_service import build_recommendations
 
 prediction_bp = Blueprint("prediction", __name__)
 
@@ -44,15 +43,13 @@ def predict_student(student_id: int):
     except FileNotFoundError as exc:
         return {"message": str(exc)}, 400
 
-    recommendations = build_recommendations(performance, result["failure_probability"])
-
     prediction = Prediction(
         student_id=student_id,
         predicted_grade=result["predicted_grade"],
         risk_level=result["risk_level"],
         confidence=result["confidence"],
         failure_probability=result["failure_probability"],
-        recommendations="||".join(recommendations),
+        recommendations=None,
     )
 
     db.session.add(prediction)
@@ -61,10 +58,7 @@ def predict_student(student_id: int):
     return {
         "student_id": student_id,
         "predicted_grade": result["predicted_grade"],
-        "risk_level": result["risk_level"],
-        "confidence": result["confidence"],
-        "failure_probability": result["failure_probability"],
-        "recommendations": recommendations,
+        "created_at": prediction.created_at.isoformat(),
     }, 200
 
 
@@ -72,4 +66,14 @@ def predict_student(student_id: int):
 @jwt_required()
 def list_predictions():
     predictions = Prediction.query.order_by(Prediction.created_at.desc()).all()
-    return {"data": [item.to_dict() for item in predictions]}, 200
+    return {
+        "data": [
+            {
+                "id": item.id,
+                "student_id": item.student_id,
+                "predicted_grade": item.predicted_grade,
+                "created_at": item.created_at.isoformat(),
+            }
+            for item in predictions
+        ]
+    }, 200
